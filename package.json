@@ -1,0 +1,17 @@
+{
+  "name": "revokx",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Access revocation testing experiments.",
+  "type": "module",
+  "scripts": {
+    "start": "node demo/server.js",
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "dependencies": {
+    "express": "5.3.0",
+    "express-session": "1.19.0"
+  }
+}
