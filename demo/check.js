@@ -3,7 +3,6 @@ import { observeAccess } from "../src/observe.js";
 
 export function classifyFileResponse(response, expectedFile) {
   const actualFile = response.body?.file;
-
   // Protected content proves access, even with an error status.
   if (
     actualFile?.id === expectedFile.id &&
@@ -38,7 +37,6 @@ export async function checkRevocation(baseUrl, settings = {}) {
     requestTimeoutMs: settings.requestTimeoutMs ?? 1500
   };
 
-  // Validate before logging in or changing application state.
   if (
     !Number.isFinite(timing.revocationWindowMs) ||
     timing.revocationWindowMs < 0 ||
@@ -115,6 +113,32 @@ export async function checkRevocation(baseUrl, settings = {}) {
     });
   }
 
+  async function issueLink(identity) {
+    const result = await request("/team/download-links", {
+      method: "POST",
+      headers: {
+        Cookie: identity.cookie,
+        "x-csrf-token": identity.csrfToken
+      }
+    });
+
+    const path = result.body?.downloadPath;
+
+    // Accept only the expected local route, never an external URL.
+    requireCondition(
+      result.status === 201 &&
+      typeof path === "string" &&
+      /^\/team\/downloads\/[a-f0-9]{64}$/.test(path)
+    );
+
+    return path;
+  }
+
+  function readLink(path) {
+    // Intentionally no Cookie header.
+    return request(path);
+  }
+
   async function readMembers(owner) {
     const result = await request("/team/members", {
       headers: { Cookie: owner.cookie }
@@ -163,6 +187,22 @@ export async function checkRevocation(baseUrl, settings = {}) {
       );
     }
 
+    stage = "link-baseline";
+
+    // Capture credentials before the permission change.
+    const targetLink = await issueLink(target);
+    const ownerLink = await issueLink(owner);
+    const remainingLink = await issueLink(remaining);
+
+    for (const path of [targetLink, ownerLink, remainingLink]) {
+      requireCondition(
+        classifyFileResponse(
+          await readLink(path),
+          expectedFile
+        ) === "allowed"
+      );
+    }
+
     stage = "removal";
 
     const removal = await request("/team/members/target", {
@@ -178,8 +218,8 @@ export async function checkRevocation(baseUrl, settings = {}) {
       removal.body?.removedUserId === "target"
     );
 
-    // Client timing starts after the removal response is consumed
-    // and validated. This is not the server's exact commit time.
+    // Client timing starts after the response is consumed and validated.
+    // This is not the server's exact permission-change commit time.
     const referenceMs = performance.now();
 
     stage = "membership-verification";
@@ -192,6 +232,15 @@ export async function checkRevocation(baseUrl, settings = {}) {
       membersAfter.includes("remaining")
     );
 
+    function contentPath(id, expected, read) {
+      return {
+        id,
+        expected,
+        probe: async () =>
+          classifyFileResponse(await read(), expectedFile)
+      };
+    }
+
     stage = "observation";
 
     const observation = await observeAccess({
@@ -200,33 +249,16 @@ export async function checkRevocation(baseUrl, settings = {}) {
       observationMs: timing.observationMs,
       pollIntervalMs: timing.pollIntervalMs,
       paths: [
-        {
-          id: "target-file",
-          expected: "denied",
-          probe: async () =>
-            classifyFileResponse(
-              await readFile(target),
-              expectedFile
-            )
-        },
-        {
-          id: "owner-file",
-          expected: "allowed",
-          probe: async () =>
-            classifyFileResponse(
-              await readFile(owner),
-              expectedFile
-            )
-        },
-        {
-          id: "remaining-file",
-          expected: "allowed",
-          probe: async () =>
-            classifyFileResponse(
-              await readFile(remaining),
-              expectedFile
-            )
-        },
+        contentPath("target-file", "denied", () => readFile(target)),
+        contentPath("target-link", "denied", () => readLink(targetLink)),
+        contentPath("owner-file", "allowed", () => readFile(owner)),
+        contentPath("owner-link", "allowed", () => readLink(ownerLink)),
+        contentPath("remaining-file", "allowed", () =>
+          readFile(remaining)
+        ),
+        contentPath("remaining-link", "allowed", () =>
+          readLink(remainingLink)
+        ),
         {
           id: "target-session",
           expected: "allowed",
@@ -274,13 +306,19 @@ export async function checkRevocation(baseUrl, settings = {}) {
     }
 
     const targetAccess = accessSummary("target-file");
+    const targetLinkAccess = accessSummary("target-link");
     const ownerAccess = accessSummary("owner-file");
+    const ownerLinkAccess = accessSummary("owner-link");
     const remainingAccess = accessSummary("remaining-file");
+    const remainingLinkAccess = accessSummary("remaining-link");
     const sessionAccess = accessSummary("target-session");
 
     let reason = "OBSERVED_POLICY_SATISFIED";
 
-    if (targetAccess === "allowed") {
+    if (
+      targetAccess === "allowed" ||
+      targetLinkAccess === "allowed"
+    ) {
       reason = "PROTECTED_CONTENT_AFTER_REMOVAL";
     } else if (observation.verdict === "FAIL") {
       reason = "LEGITIMATE_ACCESS_DENIED";
@@ -293,8 +331,11 @@ export async function checkRevocation(baseUrl, settings = {}) {
       reason,
       membershipRemovalVerified: true,
       targetAccess,
+      targetLinkAccess,
       ownerAccess,
+      ownerLinkAccess,
       remainingAccess,
+      remainingLinkAccess,
       targetStillAuthenticated:
         sessionAccess === "inconclusive"
           ? null
