@@ -1,0 +1,45 @@
+name: REVOKX tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests on Windows
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24.18.1"
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm.cmd ci
+
+      - name: Run automated tests
+        run: npm.cmd test
+
+      - name: Run fixed demo
+        run: node demo/run-check.js fixed
+
+      - name: Upload available reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: revokx-reports-windows
+          path: reports/*.json
+          if-no-files-found: warn
+          retention-days: 7
