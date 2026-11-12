@@ -3,58 +3,45 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import { createApp } from "../demo/app.js";
 import { checkRevocation } from "../demo/check.js";
-
 async function startTestServer(t, mode) {
   const server = createApp({ mode }).listen(0, "127.0.0.1");
-
   t.after(async () => {
     if (!server.listening) {
       return;
     }
-
     await new Promise((resolve, reject) => {
       server.close((error) => {
         if (error) {
           reject(error);
           return;
         }
-
         resolve();
       });
-
       server.closeAllConnections();
     });
   });
-
   await once(server, "listening");
-
   return `http://127.0.0.1:${server.address().port}`;
 }
-
 function jsonResponse(status, body) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "Content-Type": "application/json" }
   });
 }
-
 function overrideAfterRemoval(t, baseUrl, scenario) {
   const originalFetch = globalThis.fetch;
   const cookies = new Map();
   const links = new Map();
-
   let removed = false;
   let overrideCount = 0;
-
   t.mock.method(globalThis, "fetch", async (input, options = {}) => {
     const url = new URL(input);
     const headers = new Headers(options.headers);
     const method = options.method ?? "GET";
-
     if (url.origin !== new URL(baseUrl).origin) {
       return originalFetch(input, options);
     }
-
     if (removed) {
       const targetFile =
         url.pathname === "/team/file" &&
@@ -231,18 +218,15 @@ for (const scenario of scenarios) {
     assert.ok(affectedResult);
     assert.ok(affectedResult.eligibleSamples > 0);
     assert.equal(affectedResult.verdict, scenario.pathVerdict);
-
     const affectedSamples = report.samples.filter(
       (sample) => sample.pathId === scenario.pathId
     );
-
     assert.ok(affectedSamples.length > 0);
     assert.ok(
       affectedSamples.every(
         (sample) => sample.outcome === scenario.outcome
       )
     );
-
     // Every other configured check should satisfy its own policy.
     for (const result of report.results) {
       if (result.pathId !== scenario.pathId) {
