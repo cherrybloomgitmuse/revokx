@@ -1,5 +1,13 @@
 import { Router } from "express";
-import { randomUUID } from "node:crypto";
+import {
+  createHash,
+  randomBytes,
+  randomUUID
+} from "node:crypto";
+
+function hashToken(token) {
+  return createHash("sha256").update(token).digest("hex");
+}
 
 export function createTeamRouter({ mode = "fixed" } = {}) {
   if (!["fixed", "vulnerable"].includes(mode)) {
@@ -14,10 +22,44 @@ export function createTeamRouter({ mode = "fixed" } = {}) {
     ["remaining", "member"]
   ]);
 
+  // Store token hashes, not raw bearer tokens.
+  const downloadLinks = new Map();
+
   const file = {
     id: "project-notes",
     content: `Confidential lab fixture: ${randomUUID()}`
   };
+
+  // Bearer downloads intentionally do not require a session.
+  router.get("/downloads/:token", (request, response) => {
+    const token = request.params.token;
+
+    if (!/^[a-f0-9]{64}$/.test(token)) {
+      return response.status(404).json({
+        error: "LINK_NOT_FOUND"
+      });
+    }
+
+    const link = downloadLinks.get(hashToken(token));
+
+    if (!link) {
+      return response.status(404).json({
+        error: "LINK_NOT_FOUND"
+      });
+    }
+
+    if (
+      mode === "fixed" &&
+      !members.has(link.issuedTo)
+    ) {
+      return response.status(403).json({
+        error: "TEAM_ACCESS_DENIED"
+      });
+    }
+
+    // Vulnerable mode intentionally trusts the old grant.
+    response.json({ file });
+  });
 
   router.use((request, response, next) => {
     if (!request.session.userId) {
@@ -27,6 +69,36 @@ export function createTeamRouter({ mode = "fixed" } = {}) {
     }
 
     next();
+  });
+
+  router.post("/download-links", (request, response) => {
+    const csrfToken = request.session.csrfToken;
+
+    if (
+      typeof csrfToken !== "string" ||
+      request.get("x-csrf-token") !== csrfToken
+    ) {
+      return response.status(403).json({
+        error: "CSRF_INVALID"
+      });
+    }
+
+    // Both modes prevent removed users from minting new links.
+    if (!members.has(request.session.userId)) {
+      return response.status(403).json({
+        error: "TEAM_ACCESS_DENIED"
+      });
+    }
+
+    const token = randomBytes(32).toString("hex");
+
+    downloadLinks.set(hashToken(token), {
+      issuedTo: request.session.userId
+    });
+
+    response.status(201).json({
+      downloadPath: `/team/downloads/${token}`
+    });
   });
 
   router.get("/members", (request, response) => {
