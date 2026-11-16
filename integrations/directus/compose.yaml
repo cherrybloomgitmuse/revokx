@@ -1,0 +1,42 @@
+name: revokx-directus-1140
+
+services:
+  directus:
+    image: directus/directus:11.4.0@sha256:8468342b0ca17a4163519731510f327b53d56315f45838d1e78b69e4894d8243
+    environment:
+      SECRET: "${DIRECTUS_SECRET:?Generate the local .env first}"
+      ADMIN_EMAIL: "admin@example.com"
+      ADMIN_PASSWORD: "${DIRECTUS_ADMIN_PASSWORD:?Generate the local .env first}"
+      DB_CLIENT: "sqlite3"
+      DB_FILENAME: "/directus/database/data.db"
+      PUBLIC_URL: "http://127.0.0.1:8055"
+      TELEMETRY: "false"
+    volumes:
+      - database:/directus/database
+      - uploads:/directus/uploads
+    networks:
+      - lab
+    restart: "no"
+
+  proxy:
+    image: nginx:1.28-alpine
+    ports:
+      - "127.0.0.1:8055:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - directus
+    networks:
+      - lab
+      - access
+    restart: "no"
+
+volumes:
+  database:
+  uploads:
+
+networks:
+  lab:
+    internal: true
+  access:
+    driver: bridge
