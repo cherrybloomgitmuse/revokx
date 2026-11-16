@@ -1,3 +1,13 @@
+const setupResources = new Map([
+  ["collections", "/collections"],
+  ["documentFields", "/fields/revokx_documents"],
+  ["documents", "/items/revokx_documents"],
+  ["policies", "/policies"],
+  ["roles", "/roles"],
+  ["permissions", "/permissions"],
+  ["access", "/access"],
+  ["users", "/users"]
+]);
 export function createDirectusClient({
   baseUrl = "http://127.0.0.1:8055",
   requestTimeoutMs = 3000
@@ -71,6 +81,26 @@ export function createDirectusClient({
     }
     return email.trim();
   }
+  function setupPath(resource, query = {}) {
+    const path = setupResources.get(resource);
+    if (!path) {
+      throw new Error("Unsupported setup resource");
+    }
+    if (query === null || typeof query !== "object" || Array.isArray(query)) {
+      throw new Error("Invalid setup query");
+    }
+    const parameters = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) {
+      if (
+        !["fields", "filter", "limit", "offset", "sort"].includes(key) ||
+        typeof value !== "string"
+      ) {
+        throw new Error("Invalid setup query");
+      }
+      parameters.set(key, value);
+    }
+    return parameters.size ? `${path}?${parameters}` : path;
+  }
   async function login({ email, password }) {
     if (
       typeof email !== "string" ||
@@ -124,6 +154,15 @@ export function createDirectusClient({
           body: { status },
           cookie
         });
+      },
+      readSetupResource: (resource, query = {}) =>
+        requestData(setupPath(resource, query), { cookie }),
+      createSetupResource: (resource, body) => {
+        const path = setupPath(resource);
+        if (body === null || typeof body !== "object" || Array.isArray(body)) {
+          throw new Error("Setup creation requires one object");
+        }
+        return requestData(path, { method: "POST", body, cookie });
       }
     });
   }
