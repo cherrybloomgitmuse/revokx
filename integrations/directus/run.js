@@ -6,19 +6,37 @@ import { saveReport } from "../../src/report.js";
 const integrationDirectory = fileURLToPath(new URL("./", import.meta.url));
 const reportsDirectory = fileURLToPath(new URL("../../reports/directus/", import.meta.url));
 const instances = new Map([
-  ["original", { composeFile: "compose.yaml", versions: ["11.4.0"] }],
-  ["patched", { composeFile: "compose.patched.yaml", versions: ["11.5.0", "11.5.1"] }]
+  ["original", {
+    composeFiles: ["compose.yaml"],
+    versions: ["11.4.0"]
+  }],
+  ["patched", {
+    composeFiles: ["compose.patched.yaml"],
+    versions: ["11.5.0", "11.5.1"]
+  }],
+  ["setup", {
+    project: "revokx-directus-setup",
+    composeFiles: ["compose.patched.yaml", "compose.setup.yaml"],
+    versions: ["11.5.1"]
+  }]
 ]);
 export function readContainerVersion(instance = "original", execute = execFileSync) {
   const configuration = instances.get(instance);
   if (!configuration) {
     throw new Error("INVALID_INSTANCE");
   }
-  return execute("docker", [
-    "compose", "-f", configuration.composeFile,
+  const args = ["compose"];
+  if (configuration.project) {
+    args.push("-p", configuration.project);
+  }
+  for (const file of configuration.composeFiles) {
+    args.push("-f", file);
+  }
+  args.push(
     "exec", "-T", "directus", "node", "-p",
     "require('/directus/package.json').version"
-  ], {
+  );
+  return execute("docker", args, {
     cwd: integrationDirectory,
     encoding: "utf8",
     timeout: 15000,
@@ -98,7 +116,7 @@ if (isMain) {
   try {
     const args = process.argv.slice(2);
     if (args.length !== 1 || !instances.has(args[0])) {
-      console.error("Usage: node integrations/directus/run.js original|patched");
+      console.error("Usage: node integrations/directus/run.js original|patched|setup");
       process.exitCode = 2;
     } else {
       const result = await runDirectusLab(credentials, {}, { instance: args[0] });

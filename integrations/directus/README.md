@@ -128,8 +128,8 @@ Volumes remain available for reuse.
 Existing suspension reports and their interpretation are under evidence/directus.
 FILTER-CORRECTION.md records the item-filter correction and additional 11.5.1 run.
 Fresh automated setup has been verified on 11.5.1, not 11.4.0.
-The suspension runner currently selects the original or patched experiment project, not the disposable setup project.
-Do not use run.js patched to label an experiment against the disposable instance.
+The suspension runner supports original, patched, and setup instances. Use node integrations/directus/run.js setup for the disposable project, with the same process credentials used for setup.
+The setup instance selects Compose project revokx-directus-setup with compose.patched.yaml and the local compose.setup.yaml override.
 The setup launcher checks the disposable container version separately from its HTTP requests; it does not cryptographically bind that container to the HTTP endpoint.
 Only tested document/session paths support the recorded security conclusions.
 Setup time, resource consumption, concurrency, and comparative integration effort have not been measured.
