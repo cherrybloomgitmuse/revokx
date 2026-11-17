@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node demo/server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "dashboard": "node dashboard/server.js"
   },
   "keywords": [],
   "author": "",
