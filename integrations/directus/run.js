@@ -18,6 +18,11 @@ const instances = new Map([
     project: "revokx-directus-setup",
     composeFiles: ["compose.patched.yaml", "compose.setup.yaml"],
     versions: ["11.5.1"]
+  }],
+  ["setup-original", {
+    project: "revokx-directus-setup-original",
+    composeFiles: ["compose.yaml"],
+    versions: ["11.4.0"]
   }]
 ]);
 export function readContainerVersion(instance = "original", execute = execFileSync) {
@@ -116,7 +121,7 @@ if (isMain) {
   try {
     const args = process.argv.slice(2);
     if (args.length !== 1 || !instances.has(args[0])) {
-      console.error("Usage: node integrations/directus/run.js original|patched|setup");
+      console.error("Usage: node integrations/directus/run.js original|patched|setup|setup-original");
       process.exitCode = 2;
     } else {
       const result = await runDirectusLab(credentials, {}, { instance: args[0] });

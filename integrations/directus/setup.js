@@ -7,6 +7,18 @@ import { ensureLabUsers } from "./ensure-users.js";
 import { fixtureDocument } from "./inspect-document.js";
 import { classifyDocumentResponse } from "./classify.js";
 const integrationDirectory = fileURLToPath(new URL("./", import.meta.url));
+const setupInstances = new Map([
+  ["original", {
+    project: "revokx-directus-setup-original",
+    composeFiles: ["compose.yaml"],
+    version: "11.4.0"
+  }],
+  ["patched", {
+    project: "revokx-directus-setup",
+    composeFiles: ["compose.patched.yaml", "compose.setup.yaml"],
+    version: "11.5.1"
+  }]
+]);
 function validCredentials(credentials) {
   return ["admin", "target", "control"].every((name) =>
     credentials?.[name]?.email === `${name}@example.com` &&
@@ -98,19 +110,28 @@ export async function setupDirectusLab(credentials, dependencies = {}) {
     };
   }
 }
-function readDisposableVersion() {
-  return execFileSync("docker", [
-    "compose", "-p", "revokx-directus-setup",
-    "-f", "compose.patched.yaml",
+export function readSetupVersion(instance = "patched", execute = execFileSync) {
+  const configuration = setupInstances.get(instance);
+  if (!configuration) throw new Error("INVALID_SETUP_INSTANCE");
+  const args = ["compose", "-p", configuration.project];
+  for (const file of configuration.composeFiles) {
+    args.push("-f", file);
+  }
+  args.push(
     "exec", "-T", "directus", "node", "-p",
     "require('/directus/package.json').version"
-  ], {
+  );
+  const version = execute("docker", args, {
     cwd: integrationDirectory,
     encoding: "utf8",
     timeout: 15000,
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true
   }).trim();
+  if (version !== configuration.version) {
+    throw new Error("SETUP_INSTANCE_VERSION_MISMATCH");
+  }
+  return version;
 }
 const isMain = process.argv[1] &&
   pathToFileURL(resolve(process.argv[1])).href === import.meta.url;
@@ -129,13 +150,17 @@ if (isMain) {
   }
   let stage = "instance-verification";
   try {
-    if (process.argv.length !== 2) throw new Error("UNEXPECTED_ARGUMENTS");
-    const version = readDisposableVersion();
-    if (version !== "11.5.1") throw new Error("UNEXPECTED_VERSION");
+    const args = process.argv.slice(2);
+    const selection = args[0] ?? "patched";
+    if (args.length > 1 || !setupInstances.has(selection)) {
+      throw new Error("INVALID_SETUP_ARGUMENTS");
+    }
+    const configuration = setupInstances.get(selection);
+    const version = readSetupVersion(selection);
     stage = "setup";
     const result = await setupDirectusLab(credentials);
     console.log(JSON.stringify({
-      instance: "revokx-directus-setup",
+      instance: configuration.project,
       version,
       ...result
     }, null, 2));
