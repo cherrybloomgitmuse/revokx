@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-17T09:33:08.538Z",
+  "application": {
+    "name": "directus",
+    "version": "11.4.0"
+  },
+  "report": {
+    "verdict": "FAIL",
+    "reason": "PROTECTED_CONTENT_AFTER_SUSPENSION",
+    "event": "ACCOUNT_SUSPENSION",
+    "resource": {
+      "collection": "revokx_documents",
+      "id": 1
+    },
+    "timingReference": "CLIENT_VALIDATED_SUSPENSION_RESPONSE",
+    "timing": {
+      "revocationWindowMs": 0,
+      "observationMs": 2000,
+      "pollIntervalMs": 100,
+      "requestTimeoutMs": 3000
+    },
+    "baselineVerified": true,
+    "suspensionVerified": true,
+    "cleanup": {
+      "attempted": true,
+      "restored": true
+    },
+    "results": [
+      {
+        "pathId": "target-document-session",
+        "expected": "denied",
+        "eligibleSamples": 11,
+        "verdict": "FAIL"
+      },
+      {
+        "pathId": "control-document-session",
+        "expected": "allowed",
+        "eligibleSamples": 11,
+        "verdict": "PASS"
+      }
+    ],
+    "samples": [
+      {
+        "pathId": "target-document-session",
+        "startMs": 65.00200000000041,
+        "endMs": 109.70750000000044,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "control-document-session",
+        "startMs": 109.76050000000032,
+        "endMs": 132.26420000000007,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "target-document-session",
+        "startMs": 241.6014,
+        "endMs": 284.91370000000006,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "control-document-session",
+        "startMs": 284.9181000000003,
+        "endMs": 333.5500000000002,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "target-document-session",
+        "startMs": 433.09760000000006,
+        "endMs": 470.4477000000006,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "control-document-session",
+        "startMs": 470.45260000000053,
+        "endMs": 502.0663000000004,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "target-document-session",
+        "startMs": 617.6677,
+        "endMs": 661.1428000000005,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "control-document-session",
+        "startMs": 661.1460000000006,
+        "endMs": 689.6453000000001,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "target-document-session",
+        "startMs": 791.7887000000001,
+        "endMs": 829.1382000000003,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "control-document-session",
+        "startMs": 829.1432000000004,
+        "endMs": 846.9944000000005,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "target-document-session",
+        "startMs": 952.7822000000006,
+        "endMs": 998.9260000000004,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "control-document-session",
+        "startMs": 998.9301999999998,
+        "endMs": 1032.0461999999998,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "target-document-session",
+        "startMs": 1144.9436999999998,
+        "endMs": 1188.3503,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "control-document-session",
+        "startMs": 1188.3541999999998,
+        "endMs": 1210.1832000000004,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "target-document-session",
+        "startMs": 1321.0636000000004,
+        "endMs": 1352.4892,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "control-document-session",
+        "startMs": 1352.4953999999998,
+        "endMs": 1393.9209,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "target-document-session",
+        "startMs": 1496.4062000000004,
+        "endMs": 1536.4859999999999,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "control-document-session",
+        "startMs": 1536.4899000000005,
+        "endMs": 1593.9213,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "target-document-session",
+        "startMs": 1701.1913000000004,
+        "endMs": 1762.3608000000004,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "control-document-session",
+        "startMs": 1762.3644000000004,
+        "endMs": 1787.263,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "target-document-session",
+        "startMs": 1892.0263000000004,
+        "endMs": 1931.2215000000006,
+        "outcome": "allowed"
+      },
+      {
+        "pathId": "control-document-session",
+        "startMs": 1931.2248,
+        "endMs": 1969.5448999999999,
+        "outcome": "allowed"
+      }
+    ]
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "kind": "directus-repeat-summary",
+  "createdAt": "2026-11-17T09:33:26.602Z",
+  "summary": {
+    "status": "COMPLETED",
+    "instance": "setup-original",
+    "expectedVersion": "11.4.0",
+    "expectedVerdict": "FAIL",
+    "requestedRuns": 5,
+    "attemptedRuns": 5,
+    "matchingVerdicts": 5,
+    "counts": {
+      "PASS": 0,
+      "FAIL": 5,
+      "INCONCLUSIVE": 0,
+      "other": 0
+    },
+    "stopReason": null,
+    "runs": [
+      {
+        "run": 1,
+        "startedAt": "2026-11-17T09:33:02.789Z",
+        "durationMs": 5744.2284,
+        "version": "11.4.0",
+        "exitCode": 1,
+        "verdict": "FAIL",
+        "baselineVerified": true,
+        "suspensionVerified": true,
+        "cleanupRestored": true,
+        "reportPath": "C:\\Users\\prite\\OneDrive\\Desktop\\REVOKX\\reports\\directus\\2026-11-17T09-33-08-538Z-1ed1c5b5-091f-4842-b4b7-adfd61c1113f.json"
+      },
+      {
+        "run": 2,
+        "startedAt": "2026-11-17T09:33:08.549Z",
+        "durationMs": 4512.497700000001,
+        "version": "11.4.0",
+        "exitCode": 1,
+        "verdict": "FAIL",
+        "baselineVerified": true,
+        "suspensionVerified": true,
+        "cleanupRestored": true,
+        "reportPath": "C:\\Users\\prite\\OneDrive\\Desktop\\REVOKX\\reports\\directus\\2026-11-17T09-33-13-057Z-dcb8fa35-4a49-4e6f-8185-05e421f59288.json"
+      },
+      {
+        "run": 3,
+        "startedAt": "2026-11-17T09:33:13.061Z",
+        "durationMs": 4493.2780999999995,
+        "version": "11.4.0",
+        "exitCode": 1,
+        "verdict": "FAIL",
+        "baselineVerified": true,
+        "suspensionVerified": true,
+        "cleanupRestored": true,
+        "reportPath": "C:\\Users\\prite\\OneDrive\\Desktop\\REVOKX\\reports\\directus\\2026-11-17T09-33-17-551Z-92e4ded3-15c8-4069-8360-9e07ba98d04e.json"
+      },
+      {
+        "run": 4,
+        "startedAt": "2026-11-17T09:33:17.555Z",
+        "durationMs": 4640.379200000001,
+        "version": "11.4.0",
+        "exitCode": 1,
+        "verdict": "FAIL",
+        "baselineVerified": true,
+        "suspensionVerified": true,
+        "cleanupRestored": true,
+        "reportPath": "C:\\Users\\prite\\OneDrive\\Desktop\\REVOKX\\reports\\directus\\2026-11-17T09-33-22-192Z-53eeaec1-2305-4ca7-8abf-a7ef4dc6c2b8.json"
+      },
+      {
+        "run": 5,
+        "startedAt": "2026-11-17T09:33:22.195Z",
+        "durationMs": 4406.8397,
+        "version": "11.4.0",
+        "exitCode": 1,
+        "verdict": "FAIL",
+        "baselineVerified": true,
+        "suspensionVerified": true,
+        "cleanupRestored": true,
+        "reportPath": "C:\\Users\\prite\\OneDrive\\Desktop\\REVOKX\\reports\\directus\\2026-11-17T09-33-26-598Z-aae16eef-8c7e-4b2e-be97-6079075ce028.json"
+      }
+    ]
+  }
+}
